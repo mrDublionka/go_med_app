@@ -1,0 +1,39 @@
+version: '3.8'  # Specify your Docker Compose file version
+
+services:
+  traefik:
+    restart: "on-failure"
+    image: "traefik:v3.0.3"
+    ports:
+      - "8443:443"
+    volumes:
+      - ./docker/assets/common/traefik:/etc/traefik:ro
+  core-service-http:
+    restart: "on-failure"
+    build:
+      context: .
+      dockerfile: docker/assets/dev/goapp.dockerfile
+    command: "air -c .air.toml -- service:http"
+    logging:
+      options:
+        max-size: "1m"
+        max-file: "1"
+    working_dir: "/app/core"
+
+    volumes:
+      - .:/app
+    env_file:
+      - docker/core.env
+      - docker/storage.env
+      - docker/db.env
+      - docker/redis.env
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "timeout 2 bash -c '< /dev/tcp/127.0.0.1/8080'; exit $?"
+        ]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 5s

@@ -1,0 +1,36 @@
+http:
+  serversTransports:
+    insecureSkipVerify:
+      insecureSkipVerify: true
+  #  cloudflarewarp:
+  #    plugin:
+  #      cloudflarewarp:
+  #        disableDefault: true
+  #        trustip: # Trust IPS not required if disableDefault is false - we will allocate Cloud Flare IPs automatically
+  #          - "0.0.0.0/0"
+
+  routers:
+    # regula-doc-reader:
+    #   priority: 30
+    #   rule: "PathPrefix(`/regula/doc-reader`)"
+    #   service: "regula-doc-reader"
+    #   entryPoints:
+    #     - "websecure"
+    core:
+      priority: 20
+      rule: "PathPrefix(`/api`)"
+      service: "core"
+      entryPoints:
+        - "websecure"
+      #middlewares:
+      #  - "forwardedHeaders"
+        #- "cloudflarewarp"
+      tls: true
+
+  services:
+    core:
+      loadBalancer:
+        servers:
+          - url: "http://core:8080"
+
+
